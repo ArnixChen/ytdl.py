@@ -66,13 +66,14 @@ Give YouTube playlist URL a nickname to simplify your download command.
 
 ```bash
 # paremeter -a could be used to register or update nickname of YouTube Playlist
+# Note: A comma is used to seperate nickname with YouTube Playlist URL.
 ytdl.py -a <nickname>,<your YouTube Playlist URL>
 
-# Then you can do all above jobs with nickname.
+# Then you can do all above jobs with nickname like this.
 ytdl.py -n <nickname> -k keyword1 keyword2 -c 0
 ```
 
-Dump all registered playist
+Dump all registered YouTube playist URL.
 ```bash
 ytdl.py -d
 ```
