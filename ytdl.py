@@ -1,66 +1,7 @@
 #!/home/test/.local/venv_ytdl/bin/python
 
 '''
-last update 2024.0131
-usage:
-
-列出某個youtube playlist 的全部內容(用 -t 使用測試模式, 而不實際下載)
-  ytdl.py -t -p https://www.youtube.com/playlist?list=PLS0SUwlYe8cwN1nni53vQ3uZVTksRokhu
-
-下載某個youtube playlist 全部內容的音檔
-  ytdl.py -p https://www.youtube.com/playlist?list=PLS0SUwlYe8cwN1nni53vQ3uZVTksRokhu
-
-將某個youtube playlist 取名為「103生命科學一」,並加入 playlist 資料庫(取名與playlist URL之間用英文逗號連結)
-以後下載該 playlist 的內容時,可以用「-n 名稱」取代 「-p 長長一串playlist網址」
-  ytdl.py -a 103生命科學一,https://www.youtube.com/playlist?list=PLS0SUwlYe8cyzPZ3zagbHJNSPUcU0sTr7
-
-將取名為「103生命科學一」的 youtube playlist ,自 playlist 資料庫移除
-  ytdl.py -r 103生命科學一
-
-列出所有目前有記錄的playlist資料
-  ytdl.py -d
-
-自取名為「103生命科學一」的 playlist 中,下載全部內容的音檔
-  ytdl.py -n 103生命科學一
-
-將此 playlist https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
-加入 playlist資料庫,並取名為「聽醫生的話」
-  ytdl.py -a 聽醫生的話,https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
-
-自取名為 聽醫生的話 的 playlist 中,查詢所有標題有「腎」關鍵字的內容
-  ytdl.py -n 聽醫生的話 -t -k 腎
-
-自取名為 聽醫生的話 的 playlist 中,查詢所有標題有「腎」及「醫師」關鍵字的內容（關鍵字之間用空白區格)
-  ytdl.py -n 聽醫生的話 -t -k 腎 醫師
-
-  playlistName=聽醫生的話
-  playlistTitle=聽醫生的話／李雅媛、潘懷宗
-  playlistURL=https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
-  keywords=['腎']
-  Date:2024.0119 Title:icarebcc健康SAYYES｜硬水會造成腎結石？預防腎結石怎麼做？｜潘懷宗＋黃巧妮
-  Date:2023.1101 Title:自我檢查！從小便顏色看健康｜專訪：台中童綜合醫院腎臟科簡孝文醫師｜聽醫生的話｜李雅媛
-  Date:2023.0823 Title:夏日抗濕疹中醫小叮嚀肝腎保健穴位自己按｜專訪：新店耕莘醫院中醫科主任黃書澐醫師｜聽醫生的話｜李雅媛
-  Date:2023.0627 Title:看尿酸看錯科了？痛風破壞腎恐引發尿毒症｜專訪：台中童綜合醫院腎臟科主治醫師簡孝文｜李雅媛
-  Date:2023.0525 Title:嘴巴身體有尿騷味小心腎病找上你｜專訪：衛福部立桃園醫院副院長王偉傑醫師｜李雅媛
-
-
-自取名為 聽醫生的話 的 playlist 中,「下載第1筆」標題有「腎」及「醫師」關鍵字的內容的音檔（-c參數預設值為1)
-  ytdl.py -n 聽醫生的話 -k 腎 醫師
-
-自取名為 聽醫生的話 的 playlist 中,「下載全部」標題有「腎」及「醫師」關鍵字的內容的音檔（-c參數設為0, 代表下載全部)
-  ytdl.py -n 聽醫生的話 -k 腎 醫師 -c 0
-
-下載指定 youtube playlist https://www.youtube.com/playlist?list=PLEnJD0ANVhtU8K0MNeNsvGH-Q7k25VUd-
-中有關鍵字 沈雲驄 及 2023.07.18 的內容 的音檔
-
-  ytdl.py -k 沈雲驄 2023.07.18 -p https://www.youtube.com/playlist?list=PLEnJD0ANVhtU8K0MNeNsvGH-Q7k25VUd-
-
-下載 指定 playlist 中的前8筆內容 的音檔
-  ytdl.py -c 8 -p https://www.youtube.com/playlist?list=PLfUDQnw6Q8E7-0Dl7CQzP4tSh3tkfjsfk
-
-給定youtube 連結,直接下載 內容 的音檔
-  ytdl.py -u https://www.youtube.com/watch?v=3TZIKISbZvc
-
+last update 2024.0217
 '''
 
 import json
