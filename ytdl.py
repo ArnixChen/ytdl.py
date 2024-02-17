@@ -1,4 +1,4 @@
-#!/home/test/.local/venv3.10.8_audio/bin/python
+#!/home/test/.local/venv_ytdl/bin/python
 
 '''
 last update 2024.0131
