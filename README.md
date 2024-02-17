@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ### Copy ytdl.py to your local bin folder
 ```bash
 cp ytdl.py ~/.local/bin
-chmod u+x ~/.local/bin
+chmod u+x ~/.local/bin/ytdl.py
 ```
 
 ## Examples of YouTube media downloading.
