@@ -1,7 +1,66 @@
 #!/home/test/.local/venv_ytdl/bin/python
 
 '''
-last update 2024.0217
+last update 2024.0424
+usage:
+
+列出某個youtube playlist 的全部內容(用 -t 使用測試模式, 而不實際下載)
+  ytdl.py -t -p https://www.youtube.com/playlist?list=PLS0SUwlYe8cwN1nni53vQ3uZVTksRokhu
+
+下載某個youtube playlist 全部內容的音檔
+  ytdl.py -p https://www.youtube.com/playlist?list=PLS0SUwlYe8cwN1nni53vQ3uZVTksRokhu
+
+將某個youtube playlist 取名為「103生命科學一」,並加入 playlist 資料庫(取名與playlist URL之間用英文逗號連結)
+以後下載該 playlist 的內容時,可以用「-n 名稱」取代 「-p 長長一串playlist網址」
+  ytdl.py -a 103生命科學一,https://www.youtube.com/playlist?list=PLS0SUwlYe8cyzPZ3zagbHJNSPUcU0sTr7
+
+將取名為「103生命科學一」的 youtube playlist ,自 playlist 資料庫移除
+  ytdl.py -r 103生命科學一
+
+列出所有目前有記錄的playlist資料
+  ytdl.py -d
+
+自取名為「103生命科學一」的 playlist 中,下載全部內容的音檔
+  ytdl.py -n 103生命科學一
+
+將此 playlist https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
+加入 playlist資料庫,並取名為「聽醫生的話」
+  ytdl.py -a 聽醫生的話,https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
+
+自取名為 聽醫生的話 的 playlist 中,查詢所有標題有「腎」關鍵字的內容
+  ytdl.py -n 聽醫生的話 -t -k 腎
+
+自取名為 聽醫生的話 的 playlist 中,查詢所有標題有「腎」及「醫師」關鍵字的內容（關鍵字之間用空白區格)
+  ytdl.py -n 聽醫生的話 -t -k 腎 醫師
+
+  playlistName=聽醫生的話
+  playlistTitle=聽醫生的話／李雅媛、潘懷宗
+  playlistURL=https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR
+  keywords=['腎']
+  Date:2024.0119 Title:icarebcc健康SAYYES｜硬水會造成腎結石？預防腎結石怎麼做？｜潘懷宗＋黃巧妮
+  Date:2023.1101 Title:自我檢查！從小便顏色看健康｜專訪：台中童綜合醫院腎臟科簡孝文醫師｜聽醫生的話｜李雅媛
+  Date:2023.0823 Title:夏日抗濕疹中醫小叮嚀肝腎保健穴位自己按｜專訪：新店耕莘醫院中醫科主任黃書澐醫師｜聽醫生的話｜李雅媛
+  Date:2023.0627 Title:看尿酸看錯科了？痛風破壞腎恐引發尿毒症｜專訪：台中童綜合醫院腎臟科主治醫師簡孝文｜李雅媛
+  Date:2023.0525 Title:嘴巴身體有尿騷味小心腎病找上你｜專訪：衛福部立桃園醫院副院長王偉傑醫師｜李雅媛
+
+
+自取名為 聽醫生的話 的 playlist 中,「下載第1筆」標題有「腎」及「醫師」關鍵字的內容的音檔（-c參數預設值為1)
+  ytdl.py -n 聽醫生的話 -k 腎 醫師
+
+自取名為 聽醫生的話 的 playlist 中,「下載全部」標題有「腎」及「醫師」關鍵字的內容的音檔（-c參數設為0, 代表下載全部)
+  ytdl.py -n 聽醫生的話 -k 腎 醫師 -c 0
+
+下載指定 youtube playlist https://www.youtube.com/playlist?list=PLEnJD0ANVhtU8K0MNeNsvGH-Q7k25VUd-
+中有關鍵字 沈雲驄 及 2023.07.18 的內容 的音檔
+
+  ytdl.py -k 沈雲驄 2023.07.18 -p https://www.youtube.com/playlist?list=PLEnJD0ANVhtU8K0MNeNsvGH-Q7k25VUd-
+
+下載 指定 playlist 中的前8筆內容 的音檔
+  ytdl.py -c 8 -p https://www.youtube.com/playlist?list=PLfUDQnw6Q8E7-0Dl7CQzP4tSh3tkfjsfk
+
+給定youtube 連結,直接下載 內容 的音檔
+  ytdl.py -u https://www.youtube.com/watch?v=3TZIKISbZvc
+
 '''
 
 import json
@@ -244,6 +303,7 @@ def download_media_as_mp3(title, url, dateString):
   import pytube
   from pytube import YouTube
   from moviepy.editor import AudioFileClip
+  import errno
 
   #print(f'dateString={dateString}')
   fileName = dateString + '.' + re.sub(r'([0-9]{2,4})[./-]?([0-9]{2})[./-]?([0-9]{2})', r'\1\2\3', title)
@@ -253,14 +313,25 @@ def download_media_as_mp3(title, url, dateString):
     yt = YouTube(url)
     #yt.streams.filter(adaptive=True, subtype="mp4", abr="128kbps").last().download(filename=fileName+'.mp4')
     mediaFile = None
+
     try:
-      mediaFile = yt.streams.filter(adaptive=True, only_audio=True, abr="128kbps").last().download()
+      stream = yt.streams.filter(adaptive=True, only_audio=True, abr="128kbps").last()
+      mediaFile = stream.download()
       print(" , Done !")
       #print(f'mediaFile ={mediaFile}')
 
     except pytube.exceptions.AgeRestrictedError as e:
       print(f"\n\nSomething went wrong: {str(e)}")
       print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download()\n")
+  
+    except OSError as e:
+      if e.errno == errno.ENAMETOOLONG:
+        try:
+          filename = stream.title[0:80] + '.' + stream.subtype
+          mediaFile = stream.download(filename=filename)
+        except:
+          print(f"\n\nUnknown exception!")
+          print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download('filename={filename}')\n")
   
     except:
       print(f"\n\nUnknown exception!")
@@ -304,24 +375,28 @@ def isDate(words):
   '''
   
   '''
-  checkType = type(re.match(r'[0-9]{4}.[0-9]{4}', words))
+  checkType = type(re.match(r'[0-9]{4}[./-]?[0-9]{2}[./-]?[0-9]{2}', words))
   pass1 = True if checkType != type(None) else False
 
   if pass1 == False:
     return False
 
-  if len(words) !=9:
+  if len(words) !=9 and len(words) !=10:
     return False
+    
+  year = re.sub(r'([0-9]{2,4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2})', r'\1', words)
+  month = re.sub(r'([0-9]{2,4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2})', r'\2', words)
+  day = re.sub(r'([0-9]{2,4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2})', r'\3', words)
 
-  year = words[0:4]
+  #year = words[0:4]
   if int(year) < 2004 or int(year) > 2100:
     return False
 
-  month = words[5:7]
+  #month = words[5:7]
   if int(month) <= 0 or int(month)>12:
     return False
 
-  day = words[7:9]
+  #day = words[7:9]
   if int(day) <= 0 or int(day)>31:
     return False
   
@@ -351,7 +426,7 @@ def getDateString(string):
     if len(day) == 1:
       day = '0' + day
 
-    date = f"{year}.{month}{day}"
+    date = f"{year}.{month}.{day}"
 
     if debug == True:
       print(f"\ndateFromString={date}")
@@ -363,7 +438,7 @@ def getDateString(string):
     date = re.sub(r'(.*)([0-9]{2,4})([./-]+)([0-9]{1,2})([./-]+)([0-9]{1,2})(.*)', r'\2\3\4\5\6', string)
 
   if debug == True:
-    print(f"\ndateFromString={date}")
+    print(f"\ngetDateString() dateFromString={date}")
 
   year = re.sub(r'([0-9]{2,4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2})', r'\1', date)
   month = re.sub(r'([0-9]{2,4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2})', r'\2', date)
@@ -395,23 +470,27 @@ def fixTitle(string):
   #string = re.sub(r"'", '', string)
 
   # Remove Unwanted string or characters
-  removeList = ['News98', '中廣流行網', '國立自然科學博物館館長', '國立自然科學博物館長', '國立科學博物館館長', '國立科博館館長', '國立科博館']
+
+  removeList = ['News98', '中廣流行網', '國立自然科學博物館館長', '國立自然科學博物館長', '國立科學博物館館長', '國立科博館館長', '國立科博館', '飛碟聯播網']
+  
   for words in removeList:
     string = string.replace(words, '')
-
-  begin = string.find('【')
-  if begin != -1:
-    end = string.find('】') + 1
-    banner = string[begin:end]
-    string = string.replace(banner, '')
+  
+  #移除 粗體括號圍起來的文字 【健康醫療 單元】
+  if False:
+    begin = string.find('【')
+    if begin != -1:
+      end = string.find('】') + 1
+      banner = string[begin:end]
+      string = string.replace(banner, '')
 
   # Substitue / to -
   string = re.sub(r'/', r'-', string)
   #print(f'  title={string}')
 
   if testMode == False:
-    if len(string) > 50:
-      string = string[0:49] # 只取前32個字,避免檔太長
+    if len(string) > 70:
+      string = string[0:69] # 只取前32個字,避免檔太長
   return string
 
 def youtube_url_downloader(url, format):
@@ -439,7 +518,7 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
   from pytube import YouTube
   from pytube import Playlist
   global testMode
-
+  
   pl =  Playlist(playlistURL)
   if playlist_exists(playlistURL) == False:
     title = fixTitle(pl.title)
@@ -464,6 +543,22 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
 
   counter = 0
   keywordToDate = ''
+  '''
+      sign = sign + 1
+    
+    if (sign % 4) == 0:
+      print("\r|", end="")
+    elif (sign % 4) == 1:
+      print("\r/", end="")
+    elif (sign % 4) == 2:
+      print("\r-", end="")
+    elif (sign % 4) == 3:
+      print("\r\\", end="")
+  '''
+  
+  #signList = [ '꜈', '꜉', '꜊', '꜋', '꜌', '꜑', '꜐', '꜏', '꜎', '꜍']
+  signList = [ '˥', '˦', '˧', '˨', '˩', '꜖', '꜕', '꜔', '꜓', '꜒']
+  sign = 0;
   for entry in entries:
     pattern = r'^.*([0-9]{4})[./-]?([0-9]{1,2})[./-]?([0-9]{1,2}).*$'
     title = entry['title']
@@ -481,6 +576,7 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
     else:
       date = yt.publish_date.strftime('%Y.%m%d')
 
+    date = fixDateString(date)
     #print(f"title={title}")
     #print(f"dateFromTitle={dateFromTitle}")
     #print(f"date={date}")
@@ -493,12 +589,16 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
     
     try:
       for keyword in keywords:
+        print(f"\r{signList[sign%10]}", end="")
+        sign = sign + 1
         #print('.', end='')
         if debug == True:
           print(f"  checking {keyword}")
 
         keywordIsDate = isDate(keyword)
-        #print(f'\tkeywordIsDate={keywordIsDate}')
+        if debug == True:
+          print(f'\tkeywordIsDate={keywordIsDate}')
+          
         if keywordIsDate == True:
           keywordToDate = fixDateString(keyword)
           if debug == True:
@@ -525,10 +625,11 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
       # Whenever no keywords were given
       print('',end='')
 
+
     if all_keywords_matched == False:
       continue
 
-    print(f"Date:{date} Title:{title}")
+    print(f"\rDate:{date} Title:{title}")
 
     if testMode == False:
       if format.lower() == "mp3":
@@ -664,7 +765,6 @@ if __name__ == '__main__':
       'url' : "https://www.youtube.com/playlist?list=PLio8ImdYUsYh3_WijW4Dh95HTfh4w89Nf",
       'comment' : "熱血科學家的閒話加長" }]
 
-
   if args.importDB == True:
     for item in playlistDBx:
       description = f"{item['name']},{item['url']}"
@@ -683,9 +783,9 @@ if __name__ == '__main__':
       print(f"playlistTitle={playlistTitle}")
       print(f"playlistURL={playlistURL}")
       print(f"keywords={keywords}")
+      print()
       youtube_playlist_downloader(keywords, playlistURL, count, format)
     else:
       print(f"No matched playlistName -- {playlistName} !!")
-
 
 
