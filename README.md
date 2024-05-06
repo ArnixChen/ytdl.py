@@ -20,6 +20,15 @@ cp ytdl.py ~/.local/bin
 chmod u+x ~/.local/bin/ytdl.py
 ```
 
+### Change 'test' string in the statement behind shebang of ytdl.py to your username
+```
+#!/home/test/.local/venv_ytdl/bin/python
+```
+to
+```
+#!/home/YourUserName/.local/venv_ytdl/bin/python
+```
+
 ## Examples of YouTube media downloading.
 ### Get media from a YouTube link URL.
 ```bash
