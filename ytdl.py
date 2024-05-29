@@ -1,7 +1,14 @@
 #!/home/test/.local/venv_ytdl/bin/python
 
+
 '''
-last update 2024.0424
+#!/home/test/.local/venv3.10.8_audio/bin/python
+last update 2024.0529
+
+update list:
+  Fix error on reading .json file while it is actually not exist.
+  Fix error if playlistURL don't have https:// at its head.
+
 usage:
 
 列出某個youtube playlist 的全部內容(用 -t 使用測試模式, 而不實際下載)
@@ -238,8 +245,11 @@ def reterivePlaylistData(playlistURL, jsonFile):
     'dump_single_json': True,
     'extract_flat': True,
   }
+  
+  if not 'https://' in playlistURL:
+    playlistURL = 'https://' + playlistURL
 
-  with youtube_dl .YoutubeDL(ydl_opts) as ydl:
+  with youtube_dl.YoutubeDL(ydl_opts) as ydl:
     result = ydl.extract_info(playlistURL, False)
 
   with open(jsonFile, 'w') as fnObj:
@@ -330,11 +340,12 @@ def download_media_as_mp3(title, url, dateString):
           filename = stream.title[0:80] + '.' + stream.subtype
           mediaFile = stream.download(filename=filename)
         except:
-          print(f"\n\nUnknown exception!")
+          print(f"\n\nOSError exception!")
           print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download('filename={filename}')\n")
   
-    except:
+    except Exception as e:
       print(f"\n\nUnknown exception!")
+      print(f"\n{e}")
       print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download()\n")
     
     if mediaFile != None and os.path.exists(mediaFile):
@@ -530,14 +541,18 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
     print(f"jsonFile={jsonFile}")
 
   if os.path.exists(jsonFile):
-    # check if file is fresh
-    lastModTime = os.path.getmtime(jsonFile)
-    currUnixTime = time.time()
-    if (currUnixTime - lastModTime) < 86400:
-      with open(jsonFile, 'r') as fnObj:
-        entries = json.load(fnObj)
-    else:
-      entries = reterivePlaylistData(playlistURL, jsonFile)
+    jsonFileSize = os.path.getsize(jsonFile)     
+    if debug == True:
+      print(f"jsonFileSize={jsonFileSize}")
+    if not jsonFileSize == 0:
+      # check if file is fresh
+      lastModTime = os.path.getmtime(jsonFile)
+      currUnixTime = time.time()
+      if (currUnixTime - lastModTime) < 86400:
+        with open(jsonFile, 'r') as fnObj:
+          entries = json.load(fnObj)
+      else:
+        entries = reterivePlaylistData(playlistURL, jsonFile)
   else:    
     entries = reterivePlaylistData(playlistURL, jsonFile)
 
@@ -574,7 +589,14 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
       #print(f"date from Title!! {dateFromTitle}")
       date = dateFromTitle
     else:
-      date = yt.publish_date.strftime('%Y.%m%d')
+      try:
+        date_orig = yt.publish_date
+        #print(f"{date_orig}")
+        date = date_orig.strftime('%Y.%m%d')
+      except:
+        pass
+      
+      #date = yt.publish_date.strftime('%Y.%m%d')
 
     date = fixDateString(date)
     #print(f"title={title}")
@@ -787,5 +809,3 @@ if __name__ == '__main__':
       youtube_playlist_downloader(keywords, playlistURL, count, format)
     else:
       print(f"No matched playlistName -- {playlistName} !!")
-
-
