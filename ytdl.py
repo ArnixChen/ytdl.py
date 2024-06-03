@@ -3,10 +3,19 @@
 
 '''
 #!/home/test/.local/venv3.10.8_audio/bin/python
-last update 2024.0529
+last update 2024.0603
 
 update list:
+  2025.0603
+  Add pytube.exceptions.LiveStreamError exception handler.
+  Update helper messages.
+  Update internal playlist DB.
+
+  2025.0529
   Fix error on reading .json file while it is actually not exist.
+  Fix error if playlistURL don't have https:// at its head.
+  
+  2025.0525
   Fix error if playlistURL don't have https:// at its head.
 
 usage:
@@ -333,7 +342,11 @@ def download_media_as_mp3(title, url, dateString):
     except pytube.exceptions.AgeRestrictedError as e:
       print(f"\n\nSomething went wrong: {str(e)}")
       print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download()\n")
-  
+          
+    except pytube.exceptions.LiveStreamError as e:
+      print(f"\n\nLive Streaming cannot be download: {str(e)}")
+      print(f"yt = YouTube('{url}')\nmediaFile=yt.streams.filter(adaptive=True, only_audio=True, abr='128kps').last().download()\n")
+
     except OSError as e:
       if e.errno == errno.ENAMETOOLONG:
         try:
@@ -508,6 +521,7 @@ def youtube_url_downloader(url, format):
   from pytube import YouTube
 
   yt = YouTube(url)
+  url = yt.watch_url
   title = yt.title
 
   # remove date string
@@ -667,11 +681,11 @@ def youtube_playlist_downloader(keywords, playlistURL, count, format):
       
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='YouTube video downloader')
-  parser.add_argument('-u', '--url', type=str, default='', help='YouTube video URL')
-  parser.add_argument('-k', '--keywords', nargs='+', required=False, help='keyword')
-  parser.add_argument('-p', '--playlistURL', type=str, default='', help='YouTube playlist URL')
+  parser.add_argument('-u', '--url', type=str, default='', help='Download YouTube video with video URL')
+  parser.add_argument('-k', '--keywords', nargs='+', required=False, help='keywords seperated by space')
+  parser.add_argument('-p', '--playlistURL', type=str, default='', help='Download from YouTube playlist with URL')
   parser.add_argument('-c', '--count', type=int, default=1, help='Number of videos to be download')
-  parser.add_argument('-n', '--playlistName', type=str, default='', help='YouTube playlist name')
+  parser.add_argument('-n', '--playlistName', type=str, default='', help='Download  from YouTube playlist with playlist name listed in DB')
   parser.add_argument('-f', '--format', type=str, default='mp3', help='media format to save -- mp3/mp4')
   parser.add_argument('-D', '--debug', action='store_true', default=False, help='Enable debug message or not')
   parser.add_argument('-a', '--add_new_playlist', nargs='+', required=False, help='add new YouTube playlist to DB')
@@ -680,7 +694,7 @@ if __name__ == '__main__':
 
   parser.add_argument('-d', '--dump_playlistDB', action='store_true', required=False, help='dump playlistDB')
 
-  parser.add_argument('-i', '--importDB', action='store_true', required=False, help='import internalDB')
+  parser.add_argument('-i', '--importDB', action='store_true', required=False, help='import playlist DB from script build-in list')
 
   parser.add_argument('-t', '--test_mode', action='store_true', default=False, help='Test Mode -- File downloading is disabled')
   
@@ -759,30 +773,12 @@ if __name__ == '__main__':
     { 'name' : "聽醫生的話",
       'url' : "https://www.youtube.com/playlist?list=PLEnJD0ANVhtXVoLZ5NeJtDCBp0ii8-LsR",
       'comment' : "" },
-    { 'name' : "幸福好時光",
-      'url' : "https://www.youtube.com/playlist?list=PLEnJD0ANVhtXqYR35gXcp8E-dLfiq6O-3",
-      'comment' : "" },
-    { 'name' : "科學史沙龍1",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGj0rwTK9T91zgX5iKj7Unto",
-      'comment' : "科學講古列車" },
-    { 'name' : "科學史沙龍2",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGg5orDjrjsgF7AjaeAqVamP",
-      'comment' : "2014-2018" },
-    { 'name' : "科學史沙龍2019",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGhO-AmWtLkBLqJQZVhXWFt4",
-      'comment' : "2019" },
-    { 'name' : "科學史沙龍2020",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGikYwk9DcuIwrIVgeNZHYLn",
-      'comment' : "2020" },
-    { 'name' : "科學史沙龍2021",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGj2DyhnFXVFZADgnPYan0kY",
-      'comment' : "2021" },
-    { 'name' : "科學史沙龍2022",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGjxRKafwR7o0Lwmjg12ENIx",
-      'comment' : "2022" },
-    { 'name' : "科學史沙龍2023",
-      'url' : "https://www.youtube.com/playlist?list=PLil-R4o6jmGjlIC2jwHfoUUgq21-hRb_n",
-      'comment' : "2023" },
+    { 'name' : "張大春",
+      'url' : "https://www.youtube.com/playlist?list=PL0VpXJuJSa7cGjKnKrK2vYLMQrjGtzcQm",
+      'comment' : "張大春泡新聞" },
+    { 'name' : "飛碟早餐",
+      'url' : "https://www.youtube.com/playlist?list=PLp3iy78ZeKcLJP6rVufLRWZRhDGqoKCrS",
+      'comment' : "飛碟早餐 唐湘龍時間" },
     { 'name' : "熱血科學家",
       'url' : "https://www.youtube.com/playlist?list=PLio8ImdYUsYh3_WijW4Dh95HTfh4w89Nf",
       'comment' : "熱血科學家的閒話加長" }]
