@@ -30,7 +30,7 @@ to
 ```
 
 ## Examples of YouTube media downloading.
-### Get media from a YouTube link URL.
+### Get media from a YouTube video URL.
 ```bash
 ytdl.py -u <your YouTube link URL>
 ```
@@ -39,7 +39,7 @@ ytdl.py -u <your YouTube link URL>
 ```bash
 ytdl.py -p <your YouTube Playlist URL> -t
 ```
-### List all medias from a YouTube Playlist with some keywords matched.
+### List all medias from a YouTube Playlist with keywords matched.
 Keywords are seperated by space.
 ```bash
 ytdl.py -p <your YouTube Playlist URL> -t -k keyword1 keyword2
@@ -60,7 +60,7 @@ ytdl.py -p <your YouTube Playlist URL> -k keyword1 keyword2 -c 3
 
 ### Download all medias from a YouTube Playlist with keywords matched.
 
-... Give parameter -c to 0 means download all medias.
+... Give parameter -c with 0 means download all medias.
 
 ```bash
 ytdl.py -p <your YouTube Playlist URL> -k keyword1 keyword2 -c 0
